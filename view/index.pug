@@ -1,0 +1,103 @@
+// 在 HTML 也看得到的註解
+//- 在 HTML 看不見的註解
+
+//- <!DOCTYPE HTML>
+doctype html
+
+//- 縮排請使用 Tab
+//- 縮排代表子元素
+html
+  head
+  body
+    //- 標籤 空格 內容
+    h1 標題一
+    h2 標題二
+    p 段落
+
+    //- 標籤(屬性="值" 屬性="值") 內容
+    h3(align="center") 標題三
+    a(href="https://www.google.com/" target="_blank") 連結
+
+    //- 多行內容 | shift + 鎮
+    p
+      |段落段落段落段落段落段落段落段落段落段落段落段落段落段落段落
+      |段落段落段落段落段落段落段落段落段落段落段落段落段落段落段落
+      |段落段落段落段落段落段落段落段落段落段落段落段落段落段落段落
+      |段落段落段落段落段落段落段落段落段落段落段落段落段落段落段落
+
+    div
+      |區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊
+      |區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊
+      |區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊區塊
+
+    //- 子元素 - 換行並 Tab
+    div
+      a 連結
+
+    //- 子元素 - 不換行
+    div #[a 連結]
+
+    //- 變數 - var 變數名稱 = "變數的值"
+    //- 不要用數字開頭
+    - var btn = "more!"
+
+    //- 使用變數 =變數名稱
+    a=btn
+    a=btn
+    a=btn
+    h4=btn
+    h5=btn
+
+    - var content = "內容"
+    - var content2 = "第二個內容"
+
+    h1=content
+
+    //- 需要放在內容裡面 #{變數名稱}
+    h1 這是標題一#{content}這是標題一
+
+    h1 其他文字#{content2}其他文字
+
+    //- 帶有元素的變數
+    - var big = "<b>粗體字</b>"
+    - var small = "<small>小體字</small>"
+
+    div=big
+    div=small
+
+    //- 如何使用代有元素的變數 !=變數名稱
+    div!=big
+    div!=small
+
+    //- 如何使用代有元素的變數放在內容中 !{變數名稱}
+    div 內容!{big}內容
+
+    //- 認識 mixin 方法
+    //- 定義 mixin - mixin 方法名稱 方法內容
+    mixin myMixin
+      h2 標題二
+      h3 標題三
+      p 文章內容
+      hr
+
+    //- 使用 mixin +mixin名稱
+    +myMixin
+    +myMixin
+    +myMixin
+    +myMixin
+
+
+    //- 認識 mixin 方法
+    //- 定義 mixin - mixin 方法名稱(參數1，參數2，....參數n) 方法內容
+    //- 參數 與 變數用法相同
+
+    mixin my123(text,content)
+      h2=text
+      h3=content
+      hr
+
+      //- 使用 mixin +mixin名稱
+    +my123("喝采","超棒")
+    +my123("阿容","超厲害")
+
+
