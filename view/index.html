@@ -1,10 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-    <title>My Cool Website</title>
+    <meta charset="UTF-8" />
+    <title>VKOOL App - 儲存圖片網址與說明</title>
+    <style>
+        body { max-width: 600px; margin: 2em auto; font-family: Arial, sans-serif; }
+        img { max-width: 100%; height: auto; margin-bottom: 10px; }
+        .photo-item { border-bottom: 1px solid #ccc; padding: 10px 0; position: relative; }
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 0;
+            background: #f44336;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body>
-<h1>Welcome to my website! ⭐️</h1>
-<p>How was your day? 🎉</p>
+
+<h2>🔗 VKOOL App - 儲存圖片網址 + 說明到 Firestore</h2>
+
+<form id="saveForm">
+    <input type="url" id="imageUrl" placeholder="輸入圖片網址（https://...）" required style="width: 100%; padding: 8px;" /><br /><br />
+    <input type="text" id="caption" placeholder="輸入圖片說明" required style="width: 100%; padding: 8px;" /><br /><br />
+    <button type="submit" style="padding: 10px 20px;">儲存</button>
+</form>
+
+<p id="result"></p>
+
+<hr />
+
+<h3>🖼️ 已儲存圖片列表：</h3>
+<div id="photoList"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, serverTimestamp, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAAyAfXq4mOaOF96w5WyKsRvBr2Uk2NRVI",
+      authDomain: "vkool-app-api.firebaseapp.com",
+      projectId: "vkool-app-api",
+      storageBucket: "vkool-app-api.appspot.com",
+      messagingSenderId: "182591589393",
+      appId: "1:182591589393:web:15676991e29b83d86735b0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const form = document.getElementById("saveForm");
+    const result = document.getElementById("result");
+    const photoList = document.getElementById("photoList");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const imageUrl = document.getElementById("imageUrl").value.trim();
+      const caption = document.getElementById("caption").value.trim();
+
+      if (!imageUrl || !caption) {
+        alert("請輸入網址與說明");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "photos"), {
+          imageUrl,
+          caption,
+          createdAt: serverTimestamp()
+        });
+        result.textContent = "✅ 已成功儲存！";
+        form.reset();
+        loadPhotos();
+      } catch (err) {
+        console.error(err);
+        result.textContent = "❌ 發生錯誤：" + err.message;
+      }
+    });
+
+    async function loadPhotos() {
+      photoList.innerHTML = "載入中...";
+      const snapshot = await getDocs(collection(db, "photos"));
+      photoList.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "photo-item";
+        div.innerHTML = `
+          <img src="${data.imageUrl}" alt="圖片" />
+          <strong>${data.caption}</strong>
+          <button class="delete-btn">刪除</button>
+        `;
+        // 綁定刪除事件
+        const btn = div.querySelector(".delete-btn");
+        btn.addEventListener("click", async () => {
+          if (confirm("確定要刪除這筆資料嗎？")) {
+            try {
+              await deleteDoc(doc(db, "photos", docSnap.id));
+              loadPhotos();
+            } catch (err) {
+              alert("刪除失敗：" + err.message);
+            }
+          }
+        });
+
+        photoList.appendChild(div);
+      });
+    }
+
+    loadPhotos();
+</script>
+
 </body>
 </html>
