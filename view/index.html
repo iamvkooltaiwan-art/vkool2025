@@ -44,6 +44,7 @@
     getFirestore, collection, addDoc, getDocs, serverTimestamp,
     doc, deleteDoc, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
   import {
     getAuth, signInAnonymously, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -59,64 +60,54 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  let editingId = null;
+  const auth = getAuth();
 
   const form = document.getElementById("saveForm");
   const cancelBtn = document.getElementById("cancelEdit");
   const result = document.getElementById("result");
   const photoList = document.getElementById("photoList");
 
-  // 匿名登入
+  let editingId = null;
+
   signInAnonymously(auth)
     .then(() => {
       console.log("✅ 匿名登入成功");
+      loadPhotos(); // 登入後才能使用 Firestore
     })
     .catch((error) => {
       console.error("❌ 匿名登入失敗", error);
-      result.textContent = "❌ 登入失敗：" + error.message;
+      result.textContent = "❌ 無法登入 Firebase：" + error.message;
     });
 
-  // 登入後執行 Firestore 操作
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      console.log("使用者已登入，UID:", user.uid);
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const title = document.getElementById("title").value.trim();
+    const caption = document.getElementById("caption").value.trim();
+    const imageUrl = document.getElementById("imageUrl").value.trim();
+
+    if (!title || !caption || !imageUrl) {
+      alert("請完整填寫標題、介紹與圖片網址");
+      return;
+    }
+
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, "photos", editingId), {
+          title, caption, imageUrl
+        });
+        result.textContent = "✅ 資料已更新";
+      } else {
+        await addDoc(collection(db, "photos"), {
+          title, caption, imageUrl, createdAt: serverTimestamp()
+        });
+        result.textContent = "✅ 已成功儲存！";
+      }
+
+      resetForm();
       loadPhotos();
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const title = document.getElementById("title").value.trim();
-        const caption = document.getElementById("caption").value.trim();
-        const imageUrl = document.getElementById("imageUrl").value.trim();
-
-        if (!title || !caption || !imageUrl) {
-          alert("請完整填寫標題、介紹與圖片網址");
-          return;
-        }
-
-        try {
-          if (editingId) {
-            await updateDoc(doc(db, "photos", editingId), {
-              title, caption, imageUrl
-            });
-            result.textContent = "✅ 資料已更新";
-          } else {
-            await addDoc(collection(db, "photos"), {
-              title, caption, imageUrl, createdAt: serverTimestamp()
-            });
-            result.textContent = "✅ 已成功儲存！";
-          }
-
-          resetForm();
-          loadPhotos();
-        } catch (err) {
-          console.error(err);
-          result.textContent = "❌ 發生錯誤：" + err.message;
-        }
-      });
-    } else {
-      console.warn("⚠️ 使用者尚未登入");
+    } catch (err) {
+      console.error(err);
+      result.textContent = "❌ 發生錯誤：" + err.message;
     }
   });
 
@@ -177,7 +168,7 @@
         photoList.appendChild(div);
       });
     } catch (err) {
-      console.error("❌ 載入資料失敗：", err);
+      console.error("⚠️ 載入資料錯誤：", err);
       photoList.innerHTML = "❌ 無法載入資料：" + err.message;
     }
   }
