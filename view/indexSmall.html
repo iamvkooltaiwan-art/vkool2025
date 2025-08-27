@@ -125,7 +125,7 @@ const firebaseConfig = {
           div.innerHTML = `
             <div class="photo-info">
               <p><strong>標題：</strong>${data.title || ''}</p>
-              <p><strong>介紹：</strong>${data.caption || ''}</p>
+              <p><strong>介紹：</strong><br>${(data.caption || '').replace(/\n/g, '<br>')}</p>
               <p><strong>圖片網址：</strong><a href="${data.imageUrl}" target="_blank">${data.imageUrl}</a></p>
               <img src="${data.imageUrl}" alt="圖片" />
             </div>
